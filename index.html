@@ -1,1 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | TIMATE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
 
+        .container-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        /* Поля ввода */
+        .input-field {
+            background-color: #222222;
+            border: 1px solid #333333;
+            color: #ffffff;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #007aff;
+            outline: none;
+        }
+
+        /* Главная кнопка */
+        .btn-primary {
+            background-color: #007aff;
+            color: #ffffff;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #005bbd;
+        }
+
+        /* Кнопки соцсетей */
+        .btn-social {
+            background: transparent;
+            border: 1px solid #333333;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .btn-social:hover {
+            background-color: #1a1a1a;
+            border-color: #555555;
+        }
+
+        /* Разделитель */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #555555;
+            font-size: 12px;
+            margin: 24px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #333333;
+        }
+
+        .divider:not(:empty)::before { margin-right: 12px; }
+        .divider:not(:empty)::after { margin-left: 12px; }
+
+        /* Шаги анимации */
+        .step-content {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .hidden-step {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        /* Плитки робота */
+        .robot-tile {
+            aspect-ratio: 1;
+            background: #222222;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .robot-tile.selected {
+            background: #007aff;
+            border-color: #007aff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-box">
+        <!-- Логотип TIMATE увеличенного размера -->
+        <div class="mt-4 mb-8 flex justify-center items-center">
+            <span class="text-4xl font-extrabold tracking-tight text-white uppercase">TIMATE</span>
+        </div>
+
+        <!-- Шаг 1: Вход -->
+        <div id="step-1" class="step-content">
+            <h1 class="text-3xl font-bold mb-1">Sign in</h1>
+            <p class="text-gray-400 text-sm mb-8">to continue to Timate</p>
+
+            <div class="space-y-4">
+                <input type="email" placeholder="Email" class="input-field w-full py-3 px-4 rounded-lg text-sm">
+                
+                <button onclick="goToStep2('Email')" class="btn-primary w-full py-3 rounded-lg text-sm mb-4">
+                    Continue
+                </button>
+
+                <p class="text-sm text-gray-400">
+                    New to Timate? <a href="#" class="text-blue-500 hover:underline">Create an account</a>
+                </p>
+
+                <div class="divider">or</div>
+
+                <button onclick="goToStep2('Google')" class="btn-social w-full py-3 px-4 rounded-full flex items-center justify-center gap-3">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path d="M23.766 12.2764C23.766 11.4607 23.6999 10.6406 23.5588 9.83807H12.24V14.4591H18.7217C18.4528 15.9105 17.5885 17.1582 16.3214 17.9739V20.9598H20.19C22.4603 18.8813 23.766 15.8544 23.766 12.2764Z" fill="#4285F4"/>
+                        <path d="M12.24 24C15.4834 24 18.2159 22.9269 20.1945 21.0601L16.3259 18.0742C15.2451 18.8023 13.864 19.245 12.2445 19.245C9.11242 19.245 6.45946 17.1359 5.50797 14.307H1.51318V17.3912C3.55371 21.4434 7.7029 24 12.24 24Z" fill="#34A853"/>
+                        <path d="M5.50348 14.307C5.00021 12.8099 5.00021 11.1961 5.50348 9.69904V6.61481H1.51318C-0.189307 10.0053 -0.189307 13.9947 1.51318 17.3852L5.50348 14.307Z" fill="#FBBC05"/>
+                        <path d="M12.24 4.75502C13.9576 4.73031 15.6145 5.37893 16.8533 6.56605L20.2695 3.14984C18.1035 1.12311 15.2244 -0.00315429 12.24 3.7651e-05C7.7029 3.7651e-05 3.55371 2.5566 1.51318 6.60882L5.50348 9.69305C6.45047 6.86411 9.10344 4.75502 12.24 4.75502Z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <button onclick="goToStep2('GitHub')" class="btn-social w-full py-3 px-4 rounded-full flex items-center justify-center gap-3">
+                    <i class="fab fa-github text-lg"></i>
+                    Continue with GitHub
+                </button>
+
+                <button onclick="goToStep2('Apple')" class="btn-social w-full py-3 px-4 rounded-full flex items-center justify-center gap-3">
+                    <i class="fab fa-apple text-lg"></i>
+                    Continue with Apple
+                </button>
+            </div>
+        </div>
+
+        <!-- Шаг 2: Проверка на робота -->
+        <div id="step-2" class="step-content hidden-step">
+            <h2 class="text-2xl font-bold mb-2">Безопасность</h2>
+            <p class="text-gray-400 text-sm mb-6 px-8">Выберите все предметы, связанные с <span class="text-white font-bold">электроникой</span></p>
+
+            <div class="grid grid-cols-3 gap-2 mb-8">
+                <div class="robot-grid contents"></div>
+            </div>
+
+            <button id="verify-btn" onclick="verifyRobot()" class="btn-primary w-full py-3 rounded-lg text-sm">
+                Verify
+            </button>
+            <button onclick="location.reload()" class="mt-4 text-xs text-gray-500 hover:text-white transition-colors">Cancel</button>
+        </div>
+
+        <!-- Шаг 3: Успех -->
+        <div id="step-3" class="step-content hidden-step">
+            <div class="mb-6">
+                <i class="fas fa-check-circle text-6xl text-green-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Success!</h2>
+            <p class="text-gray-400 text-sm mb-8">You have successfully signed in using <span id="final-provider" class="text-white">Email</span>.</p>
+            <button onclick="location.reload()" class="btn-primary w-full py-3 rounded-lg text-sm">
+                Go to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let providerName = "Email";
+        const icons = [
+            { icon: 'fa-laptop', isElectronic: true },
+            { icon: 'fa-tree', isElectronic: false },
+            { icon: 'fa-mobile-screen', isElectronic: true },
+            { icon: 'fa-mug-hot', isElectronic: false },
+            { icon: 'fa-microchip', isElectronic: true },
+            { icon: 'fa-cloud', isElectronic: false },
+            { icon: 'fa-camera', isElectronic: true },
+            { icon: 'fa-leaf', isElectronic: false },
+            { icon: 'fa-headphones', isElectronic: true }
+        ];
+
+        function goToStep2(provider = "Email") {
+            providerName = provider;
+            const step1 = document.getElementById('step-1');
+            step1.classList.add('hidden-step');
+            
+            setTimeout(() => {
+                step1.style.display = 'none';
+                const step2 = document.getElementById('step-2');
+                step2.style.display = 'block';
+                renderRobotGrid();
+                setTimeout(() => step2.classList.remove('hidden-step'), 50);
+            }, 300);
+        }
+
+        function renderRobotGrid() {
+            const grid = document.querySelector('.robot-grid');
+            grid.innerHTML = '';
+            const shuffled = [...icons].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach(item => {
+                const tile = document.createElement('div');
+                tile.className = 'robot-tile';
+                tile.innerHTML = `<i class="fas ${item.icon}"></i>`;
+                tile.dataset.electronic = item.isElectronic;
+                tile.onclick = () => tile.classList.toggle('selected');
+                grid.appendChild(tile);
+            });
+        }
+
+        function verifyRobot() {
+            const tiles = document.querySelectorAll('.robot-tile');
+            let isCorrect = true;
+            let selectedCount = 0;
+
+            tiles.forEach(tile => {
+                const isSelected = tile.classList.contains('selected');
+                const isElectronic = tile.dataset.electronic === 'true';
+                if (isSelected) selectedCount++;
+                if (isSelected !== isElectronic) isCorrect = false;
+            });
+
+            if (isCorrect && selectedCount > 0) {
+                showSuccess();
+            } else {
+                const btn = document.getElementById('verify-btn');
+                btn.style.backgroundColor = '#ef4444';
+                btn.innerText = 'Try Again';
+                setTimeout(() => {
+                    btn.style.backgroundColor = '#007aff';
+                    btn.innerText = 'Verify';
+                    renderRobotGrid();
+                }, 1000);
+            }
+        }
+
+        function showSuccess() {
+            document.getElementById('final-provider').innerText = providerName;
+            const step2 = document.getElementById('step-2');
+            step2.classList.add('hidden-step');
+            
+            setTimeout(() => {
+                step2.style.display = 'none';
+                const step3 = document.getElementById('step-3');
+                step3.style.display = 'block';
+                setTimeout(() => step3.classList.remove('hidden-step'), 50);
+            }, 300);
+        }
+    </script>
+</body>
+</html>
