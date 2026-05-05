@@ -124,12 +124,14 @@
             transform: translateX(-50%);
             background: #ff3b30;
             color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
             font-size: 14px;
             z-index: 1000;
             display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 90%;
+            text-align: center;
         }
     </style>
 </head>
@@ -142,7 +144,7 @@
             <span class="text-4xl font-extrabold tracking-tight text-white uppercase">TIMATE</span>
         </div>
 
-        <!-- Step 1: Sign In -->
+        <!-- Шаг 1: Вход -->
         <div id="step-1" class="step-content">
             <h1 class="text-3xl font-bold mb-1 text-white">Sign in</h1>
             <p class="text-gray-400 text-sm mb-8">to continue to Timate</p>
@@ -176,16 +178,16 @@
             </div>
         </div>
 
-        <!-- Step Loading -->
+        <!-- Шаг Загрузки -->
         <div id="step-loading" class="step-content hidden-step">
             <div class="flex flex-col items-center justify-center py-12">
                 <div class="loader mb-4" style="width: 40px; height: 40px;"></div>
                 <h2 class="text-xl font-bold mb-2">Авторизация...</h2>
-                <p class="text-gray-400 text-sm">Пожалуйста, завершите вход в появившемся окне</p>
+                <p class="text-gray-400 text-sm">Пожалуйста, подождите. Мы проверяем ваши данные.</p>
             </div>
         </div>
 
-        <!-- Step Success -->
+        <!-- Шаг Успеха -->
         <div id="step-success" class="step-content hidden-step">
             <div class="mb-6">
                 <i class="fas fa-check-circle text-6xl text-green-500"></i>
@@ -203,12 +205,16 @@
         import { 
             getAuth, 
             signInWithPopup, 
+            signInWithRedirect,
+            getRedirectResult,
             GoogleAuthProvider, 
             GithubAuthProvider,
-            browserPopupRedirectResolver 
+            browserPopupRedirectResolver,
+            onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Инициализация
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -216,16 +222,63 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         const overlay = document.getElementById('error-overlay');
-        const showLocalError = (msg) => {
-            overlay.innerText = msg;
+        const showLocalError = (msg, persistent = false) => {
+            overlay.innerHTML = msg;
             overlay.style.display = 'block';
-            setTimeout(() => overlay.style.display = 'none', 5000);
+            if (!persistent) {
+                setTimeout(() => overlay.style.display = 'none', 8000);
+            }
         };
 
         const switchStep = (toId) => {
             document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden-step'));
             document.getElementById(toId).classList.remove('hidden-step');
         };
+
+        // Обработка успешного входа
+        async function onUserAuthenticated(user, providerName) {
+            console.log("User authenticated:", user.uid);
+            try {
+                document.getElementById('user-display').innerText = `Добро пожаловать, ${user.displayName || user.email || 'Пользователь'}`;
+                switchStep('step-success');
+
+                // Сохранение профиля
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+                await setDoc(userRef, {
+                    email: user.email,
+                    name: user.displayName,
+                    photo: user.photoURL,
+                    lastLogin: new Date().toISOString(),
+                    provider: providerName
+                }, { merge: true });
+            } catch (e) {
+                console.error("Firestore sync error:", e);
+            }
+        }
+
+        // 1. Проверяем результат редиректа при загрузке страницы
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result && result.user) {
+                    onUserAuthenticated(result.user, "Redirect");
+                }
+            })
+            .catch((error) => {
+                console.error("Redirect Result Error:", error);
+                if (error.code === 'auth/unauthorized-domain') {
+                    showLocalError(`<strong>Ошибка домена:</strong> Добавьте <u>${window.location.hostname}</u> в Authorized Domains в Firebase.`, true);
+                } else {
+                    showLocalError("Ошибка авторизации: " + error.message);
+                }
+                switchStep('step-1');
+            });
+
+        // 2. Слушаем изменение состояния (для сессии)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                onUserAuthenticated(user, "Session");
+            }
+        });
 
         async function handleAuth(provider, name) {
             const btnGoogle = document.getElementById('btn-google');
@@ -236,34 +289,37 @@
             switchStep('step-loading');
 
             try {
-                // Используем явный резолвер для всплывающих окон, это помогает на кастомных доменах
-                const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
-                const user = result.user;
-                
-                // Сохраняем в базу
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid), {
-                    email: user.email,
-                    name: user.displayName,
-                    photo: user.photoURL,
-                    lastLogin: new Date().toISOString(),
-                    provider: name
-                }, { merge: true });
-
-                document.getElementById('user-display').innerText = `Добро пожаловать, ${user.displayName || user.email}`;
-                switchStep('step-success');
+                // Пытаемся открыть Popup
+                await signInWithPopup(auth, provider, browserPopupRedirectResolver);
+                // Если успешно, onAuthStateChanged подхватит юзера
             } catch (error) {
-                console.error("Auth Error:", error);
+                console.error("Auth Popup Error:", error.code, error.message);
+                
+                if (error.code === 'auth/popup-blocked') {
+                    // Если заблокировано — пробуем редирект
+                    console.log("Popup blocked, switching to redirect...");
+                    try {
+                        await signInWithRedirect(auth, provider);
+                    } catch (redirectError) {
+                        showLocalError("Не удалось запустить редирект: " + redirectError.message);
+                        resetUI();
+                    }
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    showLocalError(`<strong>Ошибка:</strong> Домен <u>${window.location.hostname}</u> не авторизован в Firebase.`, true);
+                    resetUI();
+                } else if (error.code === 'auth/popup-closed-by-user') {
+                    showLocalError("Окно входа было закрыто.");
+                    resetUI();
+                } else {
+                    showLocalError("Произошла ошибка: " + error.code);
+                    resetUI();
+                }
+            }
+
+            function resetUI() {
                 btnGoogle.disabled = false;
                 btnGithub.disabled = false;
                 switchStep('step-1');
-                
-                if (error.code === 'auth/popup-blocked') {
-                    showLocalError("Окно входа заблокировано браузером. Разрешите всплывающие окна.");
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    showLocalError(`Домен ${window.location.hostname} не разрешен в Firebase.`);
-                } else {
-                    showLocalError("Ошибка входа: " + error.message);
-                }
             }
         }
 
